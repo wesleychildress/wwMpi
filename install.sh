@@ -9,7 +9,7 @@ DIR=$( pwd )
 
 # set up permanent networking connections
 sudo mv -f /etc/network/interfaces /etc/network/interfaces.og
-sudo cp -f $( pwd )/configFiles/interfaces /etc/network/interfaces
+sudo cp -f $DIR/configFiles/interfaces /etc/network/interfaces
 sudo /etc/init.d/networking restart
 
 #install essential build tools:
@@ -26,30 +26,29 @@ sudo cp -f $( pwd )/configFiles/config /etc/selinux/config
 setenforce 0
 
 # install warewulf
-cd $( pwd )/src
+cd $DIR/src
 chmod +x install-wwdebsystem
 ./install-wwdebsystem 3.6
 cd ..
 
 # make copy of original config files then move these into place
 mv -f /etc/exports /etc/exports.og
-cp -f $( pwd )/configFiles/exports /etc/exports
+cp -f $DIR/configFiles/exports /etc/exports
 
 mv -f /usr/local/libexec/warewulf/wwmkchroot/include-deb /usr/local/libexec/warewulf/wwmkchroot/include-deb.og
-cp -f $( pwd )/configFiles/include-deb /usr/local/libexec/warewulf/wwmkchroot/include-deb
+cp -f $DIR/configFiles/include-deb /usr/local/libexec/warewulf/wwmkchroot/include-deb
 
 mv -f /usr/local/etc/warewulf/vnfs.conf /usr/local/etc/warewulf/vnfs.conf.og
-cp -f $( pwd )/configFiles/vnfs.conf /usr/local/etc/warewulf/vnfs.conf
+cp -f $DIR/configFiles/vnfs.conf /usr/local/etc/warewulf/vnfs.conf
 
-cp -f $( pwd )/configFiles/debian7.tmpl /usr/local/libexec/warewulf/wwmkchroot/debian7.tmpl
+cp -f $DIR/configFiles/debian7.tmpl /usr/local/libexec/warewulf/wwmkchroot/debian7.tmpl
 
 # Build and install MPICH
 cd $DIR/mpich
 tar zxvf mpich-3.2.1.tar.gz
 cd mpich-3.2.1
 ./configure --enable-fc --enable-f77 --enable-romio --enable-mpe --with-pm=hydra
-
-# make -j 4
+# make & install
 make
 make install
 
@@ -127,4 +126,3 @@ wwsh dhcp update
 wwsh file sync
 wwsh dhcp update
 wwsh pxe update
-
