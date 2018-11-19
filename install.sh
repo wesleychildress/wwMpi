@@ -5,6 +5,8 @@ LIST_OF_APPS="ssh ntp qt-sdk pkg-config ncurses-dev nfs-server libselinux1-dev p
 libxml2-dev libboost-dev tk-dev apache2 libapache2-mod-perl2 tftpd-hpa debootstrap tcpdump
 isc-dhcp-server curl libterm-readline-gnu-perl"
 
+DIR=$( pwd )
+
 # set up permanent networking connections
 sudo mv -f /etc/network/interfaces /etc/network/interfaces.og
 sudo cp -f $( pwd )/configFiles/interfaces /etc/network/interfaces
@@ -40,6 +42,18 @@ mv -f /usr/local/etc/warewulf/vnfs.conf /usr/local/etc/warewulf/vnfs.conf.og
 cp -f $( pwd )/configFiles/vnfs.conf /usr/local/etc/warewulf/vnfs.conf
 
 cp -f $( pwd )/configFiles/debian7.tmpl /usr/local/libexec/warewulf/wwmkchroot/debian7.tmpl
+
+# Build and install MPICH
+cd $DIR/mpich
+tar zxvf mpich-3.2.1.tar.gz
+cd mpich-3.2.1
+./configure --enable-fc --enable-f77 --enable-romio --enable-mpe --with-pm=hydra
+
+# make -j 4
+make
+make install
+
+cd $DIR
 
 # Create directories necessary for successful chrooting:
 mkdir /srv/chroots
@@ -82,7 +96,6 @@ mv -f /srv/chroots/debian7/etc/rc.local /srv/chroots/debian7/etc/rc.local.og
 cp -f $( pwd )/configFiles/rc.local /srv/chroots/debian7/etc/rc.local
 
 /bin/mount -a
-# exit 0
 
 # restart nfs on master node
 /etc/init.d/nfs-kernel-server restart
@@ -91,42 +104,27 @@ cp -f $( pwd )/configFiles/rc.local /srv/chroots/debian7/etc/rc.local
 # Restart the tftp server:
 /etc/init.d/tftpd-hpa restart
 
-wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
-wwsh dhcp update
-
+# update sources
 mv -f /srv/chroots/debian7/etc/apt/sources.list /srv/chroots/debian7/etc/apt/sources.list.og
 cp -f $( pwd )/configFiles/sources.list /srv/chroots/debian7/etc/apt/sources.list
-#mv -f /srv/chroots/debian7/etc/ntp.conf /srv/chroots/debian7/etc/ntp.conf.og
-#cp -f $( pwd )/configFiles/ntp.conf /srv/chroots/debian7/etc/ntp.conf
+
+# We want the clocks to be the same on all nodes (synchronized)
+mv -f /srv/chroots/debian7/etc/ntp.conf /srv/chroots/debian7/etc/ntp.conf.og
+cp -f $( pwd )/configFiles/ntp.conf /srv/chroots/debian7/etc/ntp.conf
 
 # update debian7 vnfs (magic land)
 chroot /srv/chroots/debian7
 mount -t proc proc proc/
 apt-get update
 apt-get upgrade
-exit
+# exit
 
-# Rebuild debian7 vnfs
+# build image
 wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
-
-# We want the clocks to be the same on all nodes (synchronized)
-mv -f /srv/chroots/debian7/etc/ntp.conf /srv/chroots/debian7/etc/ntp.conf.og
-cp -f $( pwd )/configFiles/ntp.conf /srv/chroots/debian7/etc/ntp.conf
-
-# rebuild vnfs to incorporate changes:
-wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
+wwsh dhcp update
 
 # update the files and everything else!!!!!
 wwsh file sync
 wwsh dhcp update
 wwsh pxe update
 
-# Build and install MPICH
-cd $( pwd )/mpich
-tar zxvf mpich-3.2.1.tar.gz
-cd mpich-3.2.1
-./configure --enable-fc --enable-f77 --enable-romio --enable-mpe --with-pm=hydra
-
-# make -j 4
-make
-make install
