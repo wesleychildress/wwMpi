@@ -8,22 +8,32 @@ isc-dhcp-server curl libterm-readline-gnu-perl"
 DIR=$( pwd )
 
 # set up permanent networking connections
-sudo mv -f /etc/network/interfaces /etc/network/interfaces.og
-sudo cp -f $DIR/configFiles/interfaces /etc/network/interfaces
-sudo /etc/init.d/networking restart
+mv -f /etc/network/interfaces /etc/network/interfaces.og
+cp -f $DIR/configFiles/interfaces /etc/network/interfaces
+/etc/init.d/networking restart
 
 #install essential build tools:
-sudo apt-get install -y build-essential
+apt-get install -y build-essential
 
 # install mariadb (new, updated mysql):
-sudo apt-get install -y mysql-server mysql-client
+apt-get install -y mysql-server mysql-client
 
 # install other important packages:
-sudo apt-get install -y $LIST_OF_APPS
+apt-get install -y $LIST_OF_APPS
 
-sudo mv -f /etc/selinux/config /etc/selinux/config.og
-sudo cp -f $( pwd )/configFiles/config /etc/selinux/config
+mv -f /etc/selinux/config /etc/selinux/config.og
+cp -f $( pwd )/configFiles/config /etc/selinux/config
 setenforce 0
+
+# Build and install MPICH
+cd $DIR/mpich
+tar zxvf mpich-3.2.1.tar.gz
+cd mpich-3.2.1
+./configure --enable-fc --enable-f77 --enable-romio --enable-mpe --with-pm=hydra
+# make & install
+make
+make install
+cd $DIR
 
 # install warewulf
 cd $DIR/src
@@ -43,17 +53,6 @@ cp -f $DIR/configFiles/vnfs.conf /usr/local/etc/warewulf/vnfs.conf
 
 cp -f $DIR/configFiles/debian7.tmpl /usr/local/libexec/warewulf/wwmkchroot/debian7.tmpl
 
-# Build and install MPICH
-cd $DIR/mpich
-tar zxvf mpich-3.2.1.tar.gz
-cd mpich-3.2.1
-./configure --enable-fc --enable-f77 --enable-romio --enable-mpe --with-pm=hydra
-# make & install
-make
-make install
-
-cd $DIR
-
 # Create directories necessary for successful chrooting:
 mkdir /srv/chroots
 mkdir /srv/chroots/debian7
@@ -70,29 +69,29 @@ wwmkchroot debian7 /srv/chroots/debian7
 # apt-get remove ????
 # exit
 
-# config files
+# make copy of original config files then move these into place
 mv -f /etc/idmapd.conf /etc/idmapd.conf.og
 mv -f /srv/chroots/debian7/etc/idmapd.conf /srv/chroots/debian7/etc/idmapd.conf.og
-cp -f $( pwd )/configFiles/idmapd.conf /etc/idmapd.conf
-cp -f $( pwd )/configFiles/idmapd.conf /srv/chroots/debian7/etc/idmapd.conf
+cp -f $DIR/configFiles/idmapd.conf /etc/idmapd.conf
+cp -f $DIR/configFiles/idmapd.conf /srv/chroots/debian7/etc/idmapd.conf
 
 mv -f /etc/default/nfs-common /etc/default/nfs-common.og
-cp -f $( pwd )/configFiles/nfs-common /etc/default/nfs-common
+cp -f $DIR/configFiles/nfs-common /etc/default/nfs-common
 
 mv -f /usr/local/etc/warewulf/defaults/node.conf /usr/local/etc/warewulf/defaults/node.conf.og
-cp -f $( pwd )/configFiles/node.conf /usr/local/etc/warewulf/defaults/node.conf
+cp -f $DIR/configFiles/node.conf /usr/local/etc/warewulf/defaults/node.conf
 
 mv -f /usr/local/etc/warewulf/defaults/provision.conf /usr/local/etc/warewulf/defaults/provision.conf.og
-cp -f $( pwd )/configFiles/provision.conf /usr/local/etc/warewulf/defaults/provision.conf
+cp -f $DIR/configFiles/provision.conf /usr/local/etc/warewulf/defaults/provision.conf
 
 mv -f /usr/local/etc/warewulf/bootstrap.conf /usr/local/etc/warewulf/bootstrap.conf.og
-cp -f $( pwd )/configFiles/bootstrap.conf /usr/local/etc/warewulf/bootstrap.conf
+cp -f $DIR/configFiles/bootstrap.conf /usr/local/etc/warewulf/bootstrap.conf
 
 mv -f /srv/chroots/debian7/etc/fstab /srv/chroots/debian7/etc/fstab.og
-cp -f $( pwd )/configFiles/fstab /srv/chroots/debian7/etc/fstab
+cp -f $DIR/configFiles/fstab /srv/chroots/debian7/etc/fstab
 
 mv -f /srv/chroots/debian7/etc/rc.local /srv/chroots/debian7/etc/rc.local.og
-cp -f $( pwd )/configFiles/rc.local /srv/chroots/debian7/etc/rc.local
+cp -f $DIR/configFiles/rc.local /srv/chroots/debian7/etc/rc.local
 
 /bin/mount -a
 
@@ -105,11 +104,11 @@ cp -f $( pwd )/configFiles/rc.local /srv/chroots/debian7/etc/rc.local
 
 # update sources
 mv -f /srv/chroots/debian7/etc/apt/sources.list /srv/chroots/debian7/etc/apt/sources.list.og
-cp -f $( pwd )/configFiles/sources.list /srv/chroots/debian7/etc/apt/sources.list
+cp -f $DIR/configFiles/sources.list /srv/chroots/debian7/etc/apt/sources.list
 
 # We want the clocks to be the same on all nodes (synchronized)
 mv -f /srv/chroots/debian7/etc/ntp.conf /srv/chroots/debian7/etc/ntp.conf.og
-cp -f $( pwd )/configFiles/ntp.conf /srv/chroots/debian7/etc/ntp.conf
+cp -f $DIR/configFiles/ntp.conf /srv/chroots/debian7/etc/ntp.conf
 
 # update debian7 vnfs (magic land)
 chroot /srv/chroots/debian7
@@ -117,6 +116,11 @@ mount -t proc proc proc/
 apt-get update
 apt-get upgrade
 # exit
+
+# update the files and everything else!!!!!
+wwsh file sync
+wwsh dhcp update
+wwsh pxe update
 
 # build image
 wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
