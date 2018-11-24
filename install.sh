@@ -1,5 +1,7 @@
 #!/bin/bash
-sudo apt-get install -f
+apt-get update
+apt-get upgrade
+apt-get install -f
 
 LIST_OF_APPS="ssh ntp qt-sdk pkg-config ncurses-dev nfs-server libselinux1-dev pdsh tftp gfortran
 libxml2-dev libboost-dev tk-dev apache2 libapache2-mod-perl2 tftpd-hpa debootstrap tcpdump
