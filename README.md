@@ -1,5 +1,5 @@
 # wwMpi
-an attempt to automate the instaltion and configuration of a cluster with warewulf and mpich
+an attempt to automate the installation and configuration of a cluster with warewulf and mpich
 
 Guidelines for Creating Debian 7.11 Linux Cluster
 ####
@@ -43,7 +43,7 @@ apt-get upgrade
 cd /home/***user***/Downloads
 git https://github.com/wesleychildress/wwMpi
 cd wwMpi
-cp -R * ~
+cp -r * ~
 cd ~
 ./install.sh
 

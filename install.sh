@@ -3,10 +3,11 @@ apt-get update
 apt-get upgrade
 apt-get install -f
 
+# List of necessary packages
 LIST_OF_APPS="ssh ntp qt-sdk pkg-config ncurses-dev nfs-server libselinux1-dev pdsh tftp gfortran
 libxml2-dev libboost-dev tk-dev apache2 libapache2-mod-perl2 tftpd-hpa debootstrap tcpdump
 isc-dhcp-server curl libterm-readline-gnu-perl"
-
+# current directory for reference
 DIR=$( pwd )
 
 # set up permanent networking connections
@@ -65,7 +66,7 @@ mkdir /srv/chroots/debian7/srv/chroots
 # create warewulf chroot:
 wwmkchroot debian7 /srv/chroots/debian7
 
-# MINIMIZE chroot install files:
+# MINIMIZE chroot install files: (optional)
 # chroot /srv/chroots/debian7
 # mount -t proc proc proc/
 # apt-get remove ????
