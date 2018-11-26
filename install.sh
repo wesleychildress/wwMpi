@@ -118,7 +118,7 @@ chroot /srv/chroots/debian7
 mount -t proc proc proc/
 apt-get update
 apt-get upgrade
-# exit
+exit
 
 # update the files and everything else!!!!!
 wwsh file sync
