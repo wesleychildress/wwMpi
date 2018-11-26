@@ -125,12 +125,8 @@ wwsh node new n0005 --hwaddr=b8:ac:6f:32:2e:d4 --ipaddr=10.253.1.5
 
 # (https://code.google.com/p/pdsh/wiki/UsingPDSH (Links to an external site.)Links to an external site.)
 
-
-
 pdsh -R ssh -w (masternodename),n0001 hostname
-
 pdsh -R ssh -w (masternodename),n0001 uname -a
-
 
 
 # Optional: install rsyslogd on compute nodes if needed:
@@ -143,20 +139,16 @@ wwsh dhcp update
 # then restart compute nodes
 
 # Make sure /usr/local/lib is in library path on all nodes, perhaps through the addition of
-
 # /usr/local/lib to the file /srv/chroots/debian7/etc/ld.so.conf.d/libc.conf  file
 
 # Reboot all compute nodes:
-
 pdsh -R ssh -w n0001,n0002,n0003,n0004 reboot
 # Reboot master node
+
 # login as non-root user, create file hello.c
-
-
 
 #include <stdio.h>
 #include <mpi.h>
-
 int main(int argc, char ** argv) {
 int size,rank;
 int length;
