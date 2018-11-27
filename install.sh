@@ -65,13 +65,6 @@ mkdir /srv/chroots/debian7/srv/chroots
 
 # create warewulf chroot:
 wwmkchroot debian7 /srv/chroots/debian7
-cd $DIR
-
-# MINIMIZE chroot install files: (optional)
-# chroot /srv/chroots/debian7
-# mount -t proc proc proc/
-# apt-get remove ????
-# exit
 
 # make copy of original config files then move these into place
 mv -f /etc/idmapd.conf /etc/idmapd.conf.og
@@ -110,8 +103,9 @@ showmount -e 10.253.1.254
 # Build chroot environment and install:
 wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
 wwsh dhcp update
-exit
-cd $DIR
+
+# put ./chroot.sh in place
+cp $DIR/configFiles/chroot.sh /srv/chroots/debian7/chroot.sh
 
 # update sources
 mv -f /srv/chroots/debian7/etc/apt/sources.list /srv/chroots/debian7/etc/apt/sources.list.og
@@ -122,19 +116,16 @@ mv -f /srv/chroots/debian7/etc/ntp.conf /srv/chroots/debian7/etc/ntp.conf.og
 cp -f $DIR/configFiles/ntp.conf /srv/chroots/debian7/etc/ntp.conf
 
 # update debian7 vnfs (magic land)
-chroot /srv/chroots/debian7
-mount -t proc /proc proc
-apt-get update
-apt-get upgrade
-# exit
-cd $DIR
+chroot /srv/chroots/debian7 ./chroot.sh
 
-# build image
+# build image for final time
 wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
-# wwsh dhcp update
 
 # update the files and everything else!!!!!
 wwsh file sync
 wwsh dhcp update
 wwsh pxe update
+echo 'success' | tee out.txt
+# reboot 
+shutdown -r now
 exit
