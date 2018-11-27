@@ -110,6 +110,7 @@ showmount -e 10.253.1.254
 # Build chroot environment and install:
 wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
 wwsh dhcp update
+exit
 cd $DIR
 
 # update sources
@@ -122,16 +123,15 @@ cp -f $DIR/configFiles/ntp.conf /srv/chroots/debian7/etc/ntp.conf
 
 # update debian7 vnfs (magic land)
 chroot /srv/chroots/debian7
-mount -t proc proc proc/
+mount -t proc /proc proc
 apt-get update
 apt-get upgrade
-exit
+# exit
 cd $DIR
 
 # build image
 wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
-wwsh dhcp update
-cd $DIR
+# wwsh dhcp update
 
 # update the files and everything else!!!!!
 wwsh file sync
