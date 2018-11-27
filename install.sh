@@ -42,7 +42,7 @@ cd $DIR
 cd $DIR/src
 chmod +x install-wwdebsystem
 ./install-wwdebsystem 3.6
-cd ..
+cd $DIR
 
 # make copy of original config files then move these into place
 mv -f /etc/exports /etc/exports.og
@@ -65,6 +65,7 @@ mkdir /srv/chroots/debian7/srv/chroots
 
 # create warewulf chroot:
 wwmkchroot debian7 /srv/chroots/debian7
+cd $DIR
 
 # MINIMIZE chroot install files: (optional)
 # chroot /srv/chroots/debian7
@@ -96,14 +97,20 @@ cp -f $DIR/configFiles/fstab /srv/chroots/debian7/etc/fstab
 mv -f /srv/chroots/debian7/etc/rc.local /srv/chroots/debian7/etc/rc.local.og
 cp -f $DIR/configFiles/rc.local /srv/chroots/debian7/etc/rc.local
 
-/bin/mount -a
-
 # restart nfs on master node
 /etc/init.d/nfs-kernel-server restart
 /etc/init.d/nfs-common restart
 
+# Verify the appropriate nfs filesystems are being exported by the master node:
+showmount -e 10.253.1.254
+
 # Restart the tftp server:
 /etc/init.d/tftpd-hpa restart
+
+# Build chroot environment and install:
+wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
+wwsh dhcp update
+cd $DIR
 
 # update sources
 mv -f /srv/chroots/debian7/etc/apt/sources.list /srv/chroots/debian7/etc/apt/sources.list.og
@@ -119,17 +126,15 @@ mount -t proc proc proc/
 apt-get update
 apt-get upgrade
 exit
-
-# update the files and everything else!!!!!
-wwsh file sync
-wwsh dhcp update
-wwsh pxe update
+cd $DIR
 
 # build image
 wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
 wwsh dhcp update
+cd $DIR
 
 # update the files and everything else!!!!!
 wwsh file sync
 wwsh dhcp update
 wwsh pxe update
+exit

@@ -90,36 +90,24 @@ ssh n0001
 
 # No prompt/password should happen for the second ssh
 
-#NOTE: If you have a kernel upgrade in this, you may need to update the bootstrap image by executing the following commands:
-
+# NOTE: If you have a kernel upgrade in this, you may need to update the bootstrap image by executing the following commands:
 wwbootstrap 3.21.6
-
 wwsh provision set n0001 --vnfs=debian7 --bootstrap=3.21.6-4-amd64
 
-
 # reboot n0001, then ssh into n0001 and check that ntp info is being picked up by the compute
-
 # nodes:
-
 ntpq
-
 ntpq> peers
 
 
 
 # manually add new nodes by individually executing each of the following commands:
-
 wwsh node new n0002 --hwaddr=b8:ac:6f:34:b2:fd --ipaddr=10.253.1.11
-
 wwsh node new n0003 --hwaddr=b8:ac:6f:34:62:c7 --ipaddr=10.253.1.3
-
 wwsh node new n0004 --hwaddr=b8:ac:6f:34:65:72 --ipaddr=10.253.1.4
-
 wwsh node new n0005 --hwaddr=b8:ac:6f:32:2e:d4 --ipaddr=10.253.1.5
 
-
 # Make sure all of the new nodes have their hostnames added to the ssh config files by logging #  into them manually over ssh, which should prompt for their addition to the files
-
 
 # confirm that pdsh will execute a command in parallel across an initial set of four compute nodes, as a root and as a normal user:
 
