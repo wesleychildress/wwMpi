@@ -125,7 +125,9 @@ wwvnfs --chroot /srv/chroots/debian7  --hybridpath=/vnfs
 wwsh file sync
 wwsh dhcp update
 wwsh pxe update
-echo 'success' | tee out.txt
+echo 'success'
+
 # reboot 
-shutdown -r now
+echo 'System will now reboot to finish install'
+sleep 5s; shutdown -r now
 exit

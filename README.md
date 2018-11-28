@@ -40,12 +40,15 @@ apt-get upgrade
 
 # download warewulf/mpich installer
 # then as root   
-cd /home/***user***/Downloads
-git https://github.com/wesleychildress/wwMpi
+cd /home/***user***
+git https://github.com/wesleychildress/wwMpi.git
 cd wwMpi
 cp -r * ~
 cd ~
 ./install.sh
+
+# installer will ask several queastions and is a pretty lenghty so grab a cup of coffee and/or beer
+# default for all is good for now 
 
 # Your final networking routing can be checked with:
 ip route
@@ -59,13 +62,12 @@ default via 136.160.116.1 dev eth0  proto static
 showmount -e 10.253.1.254
 
 # add first compute node, named ‘n0001’ with the appropriate HW (MAC) address:
-
 wwsh node new n0001 --hwaddr=b8:ac:6f:32:37:08 --ipaddr=10.253.1.1
 
 # Note, if you have trouble booting compute nodes over tftpd from here, it may be that the switch has bad arp info - so, restart the switch
 
 # Check that nfs mounts are working on compute nodes, and that they are mounted
-#and preserving file/directory permissions (as root):
+# and preserving file/directory permissions (as root):
 
 ssh n0001
 df -k
@@ -84,9 +86,15 @@ cd ~/.ssh
 cp id_rsa.pub authorized_keys
 cd
 ssh n0001
-(answer yes)
-Exit
+# (answer yes)
+ssh (masternode)
+# (answer yes)
+exit
+exit
 ssh n0001
+ssh (masternode)
+exit 
+exit
 
 # No prompt/password should happen for the second ssh
 
@@ -99,8 +107,6 @@ wwsh provision set n0001 --vnfs=debian7 --bootstrap=3.21.6-4-amd64
 ntpq
 ntpq> peers
 
-
-
 # manually add new nodes by individually executing each of the following commands:
 wwsh node new n0002 --hwaddr=b8:ac:6f:34:b2:fd --ipaddr=10.253.1.11
 wwsh node new n0003 --hwaddr=b8:ac:6f:34:62:c7 --ipaddr=10.253.1.3
@@ -112,7 +118,10 @@ wwsh node new n0005 --hwaddr=b8:ac:6f:32:2e:d4 --ipaddr=10.253.1.5
 # confirm that pdsh will execute a command in parallel across an initial set of four compute nodes, as a root and as a normal user:
 
 # (https://code.google.com/p/pdsh/wiki/UsingPDSH (Links to an external site.)Links to an external site.)
-
+ssh n0001
+ssh (masternode)
+exit
+exit
 pdsh -R ssh -w (masternodename),n0001 hostname
 pdsh -R ssh -w (masternodename),n0001 uname -a
 
@@ -133,37 +142,8 @@ wwsh dhcp update
 pdsh -R ssh -w n0001,n0002,n0003,n0004 reboot
 # Reboot master node
 
-# login as non-root user, create file hello.c
-
-#include <stdio.h>
-#include <mpi.h>
-int main(int argc, char ** argv) {
-int size,rank;
-int length;
-char name[80];
-MPI_Status status;
-int i;
-
-MPI_Init(&argc, &argv);
-// note that argc and argv are passed by address
-MPI_Comm_rank(MPI_COMM_WORLD,&rank);
-MPI_Comm_size(MPI_COMM_WORLD,&size);
-MPI_Get_processor_name(name,&length);
-if (rank==0) {
-    // server commands
-printf("Hello MPI from the server process!\n");
-for (i=1;i<size;i++) {
-MPI_Recv(name,80,MPI_CHAR,i,999,MPI_COMM_WORLD,&status);
-printf("Hello MPI!\n");
-printf(" mesg from %d of %d on %s\n",i,size,name);
-}
-}
-else {    // client commands
-MPI_Send(name,80,MPI_CHAR,0,999,MPI_COMM_WORLD);
-
-}
-MPI_Finalize();
-}
+# copy hello.c to home directory
+cp ~/configFiles/hello.c /home/***(username)***/hello.c
 
 # Compile executable:
 mpicc -o hello.out hello.c
